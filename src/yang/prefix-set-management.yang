@@ -1,0 +1,221 @@
+module prefix-set-management {
+  namespace "http://t-mobile.com/prefix-set-management";
+  prefix prefix-set-management;
+
+  import tailf-ncs {
+    prefix ncs;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+
+  // =========================================================================
+  // AUTHOR
+  // =========================================================================
+
+  organization "T-Mobile";
+
+  contact
+      "Alexey Stytsenko
+
+       T-Mobile
+       USA
+
+       Phone:
+       EMail: ";
+
+  description
+    "Service to allow consistent management of  prefix-sets across NXOS and IOSXR devices";
+
+  // =========================================================================
+  // REVISION
+  // =========================================================================
+
+
+  revision 2017-09-05 {
+    description
+      "Range functionality added";
+  }
+
+  revision 2017-08-30 {
+    description
+      "Initial revision.";
+  }
+
+  // =========================================================================
+  // Service manage-ipv6-prefix-set
+  // =========================================================================
+
+
+  augment /ncs:services {
+    list prefix-set-management {
+      tailf:cli-delete-when-empty;
+      tailf:cli-compact-syntax;
+      tailf:cli-sequence-commands;
+      key "prefix-set-name";
+
+
+      uses ncs:service-data;
+      ncs:servicepoint "prefix-set-management";
+
+     // name of the prefix set to manage
+      leaf prefix-set-name {
+        tailf:cli-incomplete-command;
+        type string {
+        tailf:info "Name of the Prefix set to manage";
+                pattern '([^s].*)|(s[^e].*)|(se[^q].*)'
+                  +'(seq[^u].*)|(sequ[^e].*)|(seque[^n].*)|'
+                  +'(sequen[^c].*)|(sequenc[^e].*)|(sequence'
+                  +'[^\-].*)|(sequence\-[^n].*)|(sequence\-n'
+                  +'[^u].*)|(sequence\-nu[^m].*)|(sequence\-'
+                  +'num[^b].*)|(sequence\-numb[^e].*)|'
+                  +'(sequence\-numbe[^r].*)|(sequence\-number..*)';
+        }
+      }
+         
+      // may replace this with other ways of refering to the devices.
+      leaf-list device-group {
+        tailf:cli-full-command;
+        tailf:cli-optional-in-sequence;
+        type leafref {
+          path "/ncs:devices/ncs:device-group/ncs:name";
+        }
+        tailf:info "Switches/Routers device-group name";
+      }
+         
+      // type of prefix list - ipv4 or ipv6
+      leaf type {
+        tailf:cli-full-command;
+        tailf:cli-break-sequence-commands;
+        tailf:cli-hide-in-submode;
+        mandatory true;
+        type enumeration {
+          enum "ipv4";
+          enum "ipv6";
+        }
+        tailf:info "Type of the Prefix list to manage";
+      }
+
+      list seq {
+        tailf:cli-compact-syntax;
+        tailf:cli-delete-when-empty;
+        tailf:cli-suppress-mode;
+        tailf:cli-sequence-commands;
+        tailf:cli-incomplete-command;
+        tailf:cli-reset-container;
+        key seq-number;
+        tailf:info "Sequence number for prefix-set entry";
+
+          //  sequence number (uint32)
+        leaf seq-number {
+          tailf:cli-incomplete-command; 
+          tailf:key-default "10";
+          type uint32 {
+            tailf:info "<1-4294967294>;;Sequence number";
+            range "1..4294967294";
+          } 
+        }
+        
+	// Container to use if IPv4 set managed
+	container ipv4 {
+          tailf:cli-drop-node-name;
+	  tailf:cli-compact-syntax;
+          when "../../type = 'ipv4'";
+				   
+          // IPv4 prefix  (ipv4)
+          leaf ipv4-prefix {
+            mandatory true;
+            type tailf:ipv4-address-and-prefix-length {
+              tailf:info "X.X.X.X/<0-32>  IPv4 prefix"
+                        +"<network>/<length>";
+            }  
+            tailf:info "IPv4  prefix to add to the prefix-set ";
+          }
+         
+          choice eq-or-range {
+            case eq {
+              leaf eq {
+                tailf:info "Prefix length to be matched";
+                tailf:cli-full-command;
+                type uint8 {
+                  tailf:info "<1-32>;;Prefix length";
+                  range "1..32";
+                }
+              }
+            }
+			
+            case range {
+              leaf ge {
+                tailf:info "Minimum prefix length to be matched";
+                tailf:cli-optional-in-sequence;
+                type uint8 {
+                  tailf:info "<1-32>;;Minimum prefix length";
+                  range "1..32";
+                }
+              }
+			
+              leaf le {
+                tailf:info "Maximum prefix length to be matched";
+                tailf:cli-full-command;
+                type uint8 {
+                  tailf:info "<1-32>;;Maximum prefix length";
+                  range "1..32";
+                }
+ 	      }
+            }
+          }
+        }
+
+         // Container to use if IPv6 set managed		
+	 container ipv6 {
+           tailf:cli-drop-node-name;
+   	   tailf:cli-compact-syntax;
+           when "../../type = 'ipv6'";
+				   
+          // IPv6 prefix  (ipv6)
+ 	   leaf ipv6-prefix {        
+             mandatory true;
+             type tailf:ipv6-address-and-prefix-length {
+               tailf:info "X:X:X:X::X/<0-128>  IPv6 prefix"
+                          +"<network>/<length>";
+             }             
+             tailf:info "IPv6  prefix to add to the prefix-set ";
+           }
+         
+          choice eq-or-range {
+            case eq {
+              leaf eq {
+                tailf:info "Prefix length to be matched";
+                tailf:cli-full-command;
+                type uint8 {
+                  tailf:info "<1-128>;;Prefix length";
+                  range "1..128";
+                }
+              }
+            }
+			
+            case range {
+              leaf ge {
+                tailf:info "Minimum prefix length to be matched";
+                tailf:cli-optional-in-sequence;
+                type uint8 {
+                  tailf:info "<1-128>;;Minimum prefix length";
+                  range "1..128";
+                }
+              }
+			
+              leaf le {
+                tailf:info "Maximum prefix length to be matched";
+                tailf:cli-full-command;
+                type uint8 {
+                  tailf:info "<1-32>;;Maximum prefix length";
+                  range "1..128";
+                }
+       	      }
+            }
+          }
+        }
+      }
+    }
+  }
+}
