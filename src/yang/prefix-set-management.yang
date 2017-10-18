@@ -25,12 +25,16 @@ module prefix-set-management {
        EMail: ";
 
   description
-    "Service to allow consistent management of  prefix-sets across NXOS and IOSXR devices";
+    "Service to allow consistent management of ipv4/ipv6 prefix-sets across IOS-XR and IOS-NX devices";
 
   // =========================================================================
   // REVISION
   // =========================================================================
 
+  revision 2017-10-04 {
+    description
+      "Push to devices functionality moved to package rollout-prefix-set";
+  }
 
   revision 2017-09-05 {
     description
@@ -73,15 +77,6 @@ module prefix-set-management {
         }
       }
          
-      // may replace this with other ways of refering to the devices.
-      leaf-list device-group {
-        tailf:cli-full-command;
-        tailf:cli-optional-in-sequence;
-        type leafref {
-          path "/ncs:devices/ncs:device-group/ncs:name";
-        }
-        tailf:info "Switches/Routers device-group name";
-      }
          
       // type of prefix list - ipv4 or ipv6
       leaf type {
