@@ -22,7 +22,7 @@ module prefix-set-management {
        USA
 
        Phone:
-       EMail: ";
+       EMail:";
 
   description
     "Service to allow consistent management of ipv4/ipv6 prefix-sets across IOS-XR and IOS-NX devices";
@@ -30,6 +30,11 @@ module prefix-set-management {
   // =========================================================================
   // REVISION
   // =========================================================================
+
+  revision 2017-10-17 {
+    description
+      "Comand sequencing in NSO CLI adjusted ";
+  }
 
   revision 2017-10-04 {
     description
@@ -115,6 +120,7 @@ module prefix-set-management {
 	container ipv4 {
           tailf:cli-drop-node-name;
 	  tailf:cli-compact-syntax;
+          tailf:cli-sequence-commands;
           when "../../type = 'ipv4'";
 				   
           // IPv4 prefix  (ipv4)
@@ -165,6 +171,7 @@ module prefix-set-management {
 	 container ipv6 {
            tailf:cli-drop-node-name;
    	   tailf:cli-compact-syntax;
+           tailf:cli-sequence-commands;
            when "../../type = 'ipv6'";
 				   
           // IPv6 prefix  (ipv6)
